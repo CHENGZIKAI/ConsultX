@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FeedbackRouteImport } from './routes/feedback'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ChatOldRouteImport } from './routes/chat-old'
 import { Route as ChatNewRouteImport } from './routes/chat-new'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ const LoginRoute = LoginRouteImport.update({
 const FeedbackRoute = FeedbackRouteImport.update({
   id: '/feedback',
   path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatOldRoute = ChatOldRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat-new': typeof ChatNewRoute
   '/chat-old': typeof ChatOldRoute
+  '/dashboard': typeof DashboardRoute
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat-new': typeof ChatNewRoute
   '/chat-old': typeof ChatOldRoute
+  '/dashboard': typeof DashboardRoute
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/chat-new': typeof ChatNewRoute
   '/chat-old': typeof ChatOldRoute
+  '/dashboard': typeof DashboardRoute
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
@@ -78,16 +87,25 @@ export interface FileRouteTypes {
     | '/'
     | '/chat-new'
     | '/chat-old'
+    | '/dashboard'
     | '/feedback'
     | '/login'
     | '/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat-new' | '/chat-old' | '/feedback' | '/login' | '/signup'
+  to:
+    | '/'
+    | '/chat-new'
+    | '/chat-old'
+    | '/dashboard'
+    | '/feedback'
+    | '/login'
+    | '/signup'
   id:
     | '__root__'
     | '/'
     | '/chat-new'
     | '/chat-old'
+    | '/dashboard'
     | '/feedback'
     | '/login'
     | '/signup'
@@ -97,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatNewRoute: typeof ChatNewRoute
   ChatOldRoute: typeof ChatOldRoute
+  DashboardRoute: typeof DashboardRoute
   FeedbackRoute: typeof FeedbackRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
@@ -123,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/feedback'
       fullPath: '/feedback'
       preLoaderRoute: typeof FeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat-old': {
@@ -153,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatNewRoute: ChatNewRoute,
   ChatOldRoute: ChatOldRoute,
+  DashboardRoute: DashboardRoute,
   FeedbackRoute: FeedbackRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,

@@ -25,7 +25,7 @@ function RouteComponent() {
           <SessionFeedback metrics={metrics} />
 
           <div className="mt-6 flex gap-3 justify-end">
-            <Link to="/chat" className="px-4 py-2 bg-blue-600 text-white rounded">Start New Session</Link>
+            <Link to="/chat-new" className="px-4 py-2 bg-blue-600 text-white rounded">Start New Session</Link>
             <button className="px-4 py-2 border rounded">Log Out</button>
           </div>
         </div>
