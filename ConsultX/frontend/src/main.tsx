@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Import the generated route tree
 import { routeTree } from './routeTree.gen'
@@ -25,15 +26,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+// Create a QueryClient instance
+const queryClient = new QueryClient();
+
 // Render the app
 const rootElement = document.getElementById('app')
 if (rootElement && !rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
-  root.render(
-    <StrictMode>
+   root.render(
+    <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-    </StrictMode>,
-  )
+    </QueryClientProvider>
+  );
 }
 
 // If you want to start measuring performance in your app, pass a function

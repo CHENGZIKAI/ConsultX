@@ -12,8 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FeedbackRouteImport } from './routes/feedback'
+import { Route as ChatOldRouteImport } from './routes/chat-old'
 import { Route as ChatNewRouteImport } from './routes/chat-new'
-import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SignupRoute = SignupRouteImport.update({
@@ -31,14 +31,14 @@ const FeedbackRoute = FeedbackRouteImport.update({
   path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatOldRoute = ChatOldRouteImport.update({
+  id: '/chat-old',
+  path: '/chat-old',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatNewRoute = ChatNewRouteImport.update({
   id: '/chat-new',
   path: '/chat-new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChatRoute = ChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -49,16 +49,16 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
   '/chat-new': typeof ChatNewRoute
+  '/chat-old': typeof ChatOldRoute
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
   '/chat-new': typeof ChatNewRoute
+  '/chat-old': typeof ChatOldRoute
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
@@ -66,22 +66,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/chat': typeof ChatRoute
   '/chat-new': typeof ChatNewRoute
+  '/chat-old': typeof ChatOldRoute
   '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/chat-new' | '/feedback' | '/login' | '/signup'
+  fullPaths:
+    | '/'
+    | '/chat-new'
+    | '/chat-old'
+    | '/feedback'
+    | '/login'
+    | '/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/chat-new' | '/feedback' | '/login' | '/signup'
+  to: '/' | '/chat-new' | '/chat-old' | '/feedback' | '/login' | '/signup'
   id:
     | '__root__'
     | '/'
-    | '/chat'
     | '/chat-new'
+    | '/chat-old'
     | '/feedback'
     | '/login'
     | '/signup'
@@ -89,8 +95,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ChatRoute: typeof ChatRoute
   ChatNewRoute: typeof ChatNewRoute
+  ChatOldRoute: typeof ChatOldRoute
   FeedbackRoute: typeof FeedbackRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
@@ -119,18 +125,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat-old': {
+      id: '/chat-old'
+      path: '/chat-old'
+      fullPath: '/chat-old'
+      preLoaderRoute: typeof ChatOldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat-new': {
       id: '/chat-new'
       path: '/chat-new'
       fullPath: '/chat-new'
       preLoaderRoute: typeof ChatNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/chat': {
-      id: '/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -145,8 +151,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ChatRoute: ChatRoute,
   ChatNewRoute: ChatNewRoute,
+  ChatOldRoute: ChatOldRoute,
   FeedbackRoute: FeedbackRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
