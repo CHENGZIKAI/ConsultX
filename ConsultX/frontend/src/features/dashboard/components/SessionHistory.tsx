@@ -11,7 +11,7 @@ const SessionHistory = ( {sessions} : SessionHistoryProps ) => {
   const getSessionTypeColor = () => { return 'text-[#4A90A0]'}
   
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6">
+    <div className="bg-white rounded-xl shadow-sm p-6 h-full overflow-y-auto">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-medium text-gray-900">Recent Sessions</h3>
         <Link

@@ -68,7 +68,7 @@ const MoodCheckin = ({ moodHistory } : { moodHistory: MoodEntry[] }) => {
   
   // Show check-in interface if no mood logged today
   return (
-    <div className="p-6 bg-white rounded-xl shadow-sm relative">
+    <div className="p-6 bg-white rounded-xl shadow-sm relative h-full">
       <h3 className="text-lg font-medium text-gray-900 mb-2">Daily Check-in</h3>
       <p className="text-gray-600 mb-6">How are you feeling today?</p>
       
@@ -96,6 +96,13 @@ const MoodCheckin = ({ moodHistory } : { moodHistory: MoodEntry[] }) => {
           </div>
         </div>
       )}
+
+       {/* Button to view line graph of mood trends
+      <div className="mt-4">
+        <button className="w-full py-2 bg-[#4A90A0] text-white rounded-lg hover:bg-[#70A8A2] transition-colors">
+          View Mood Trends
+        </button>
+      </div>  */}
     </div>
   )
 }

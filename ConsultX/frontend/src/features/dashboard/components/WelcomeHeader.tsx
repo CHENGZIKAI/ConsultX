@@ -15,7 +15,7 @@ const WelcomeHeader = ( { user, weather }: WelcomeHeaderProps) => {
   const greeting = getTimeBasedGreeting()
   
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+    <div className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-medium text-gray-900 mb-1">

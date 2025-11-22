@@ -66,28 +66,28 @@ const mockSessions: Session[] = [
 ]
 
 const DashboardLayout = () => {
-
   return (
-    <div className="h-screen bg-[#F6F4F2] overflow-hidden">
-      <div className="max-w-7xl mx-auto p-6 flex flex-col h-full overflow-y-auto">
-        {/* Welcome Header */}
-        <WelcomeHeader user={mockUser} weather={mockWeather} />
+    <div className="h-screen bg-[#F6F4F2]">
+      {/* Outer container must allow children to shrink */}
+      <div className="max-w-7xl mx-auto p-6 h-full flex flex-col min-h-0">
+        {/* Header (auto height) */}
+        <div className="mb-6">
+          <WelcomeHeader user={mockUser} weather={mockWeather} />
+        </div>
 
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 grow h-4/5">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
-              {/* Mood Check-In */}
-              <div className='p-2'>
-                <MoodCheckIn moodHistory={mockMoodHistory} />
-              </div>
-              {/* Session History */}
-              <SessionHistory sessions={mockSessions} />
+        {/* Main grid area fills remaining height */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0 bg-blue-100">
+          {/* LEFT COLUMN */}
+          <div className="lg:col-span-2 gap-6 h-full min-h-0 bg-green-100">
+            <SessionHistory sessions={mockSessions} />
           </div>
 
-          {/* Right Column */}
-          <div className="space-y-6">
-            <div className="max-h-full bg-white rounded-xl shadow-sm p-2">
+          {/* RIGHT COLUMN */}
+          <div className="flex flex-col gap-6 h-full min-h-0 bg-amber-100">
+            <div className="flex-1">
+              <MoodCheckIn moodHistory={mockMoodHistory} />
+            </div>
+            <div className="flex-2">
               <CalendarView calendarData={mockCalendarEvents} />
             </div>
           </div>
@@ -98,3 +98,26 @@ const DashboardLayout = () => {
 }
 
 export default DashboardLayout
+
+// <div className="max-w-7xl mx-auto p-6 flex flex-col h-full overflow-y-auto">
+//       {/* Welcome Header */}
+//       <WelcomeHeader user={mockUser} weather={mockWeather} />
+
+//       {/* Main Dashboard Grid */}
+//       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 grow h-4/5">
+//         {/* Left Column */}
+//         <div className="lg:col-span-2 space-y-6">
+//             {/* Mood Check-In */}
+//           <MoodCheckIn moodHistory={mockMoodHistory} />
+//             {/* Session History */}
+//             <SessionHistory sessions={mockSessions} />
+//         </div>
+
+//         {/* Right Column */}
+//         <div className="space-y-6">
+//           <div className="max-h-full bg-white rounded-xl shadow-sm p-2">
+//             <CalendarView calendarData={mockCalendarEvents} />
+//           </div>
+//         </div>
+//       </div>
+//     </div>
