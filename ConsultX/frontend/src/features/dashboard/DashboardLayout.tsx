@@ -4,7 +4,6 @@ import WelcomeHeader from './components/WelcomeHeader'
 import SessionHistory from './components/SessionHistory'
 import MoodCheckIn from './components/MoodCheckIn'
 
-import { useState } from 'react'
 
 // Mock user data
 const mockUser = {
