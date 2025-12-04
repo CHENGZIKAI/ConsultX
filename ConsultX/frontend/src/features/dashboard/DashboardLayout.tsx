@@ -3,11 +3,12 @@ import WelcomeHeader from './components/WelcomeHeader'
 import SessionHistory from './components/SessionHistory'
 import MoodCheckIn from './components/MoodCheckIn'
 import { useDashboardData } from '@/hooks/useDashboardData'
+import { useUser } from '@/context/UserContext'
 
 
 const DashboardLayout = () => {
   // For now, using a hardcoded userId - in real app this would come from auth context
-  const userId = 'user123'
+  const userId = useUser().username || 'user123'
   
   // Fetch all dashboard data using React Query
   const {

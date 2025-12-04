@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { signupUser } from '@/lib/api'
 
 export const Route = createFileRoute('/signup')({
   component: SignupPage,
@@ -7,16 +8,15 @@ export const Route = createFileRoute('/signup')({
 
 function SignupPage() {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
+    username: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
 
+  const navigate = useNavigate()
+ 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -33,20 +33,10 @@ function SignupPage() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = 'First name is required'
+    if (!formData.username) {
+      newErrors.username = 'Username is required'
     }
-
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = 'Last name is required'
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address'
-    }
-
+    
     if (!formData.password) {
       newErrors.password = 'Password is required'
     } else if (formData.password.length < 8) {
@@ -57,9 +47,6 @@ function SignupPage() {
       newErrors.confirmPassword = 'Passwords do not match'
     }
 
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = 'Please accept the terms and conditions'
-    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -67,24 +54,19 @@ function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     if (!validateForm()) {
       return
     }
-
     setIsLoading(true)
-
-    // TODO: Implement actual signup logic
     try {
-      // Placeholder for backend integration
-      console.log('Signup attempt:', formData)
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      await signupUser({ name: formData.username, password: formData.password })
+      // You can redirect or show a success message here
       // For now, just log success
       console.log('Signup successful')
-    } catch (err) {
-      setErrors({ general: 'Something went wrong. Try again when you\'re ready.' })
+      navigate({ to: '/login' })
+      
+    } catch (err: any) {
+      setErrors({ general: err?.message || 'Something went wrong. Try again when you\'re ready.' })
     } finally {
       setIsLoading(false)
     }
@@ -113,63 +95,25 @@ function SignupPage() {
 
           {/* Signup Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Fields */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                  First name
-                </label>
-                <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  autoComplete="given-name"
-                  required
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-md border ${errors.firstName ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
-                  placeholder="First name"
-                />
-                {errors.firstName && <p className="mt-1 text-sm text-[#C46262]">{errors.firstName}</p>}
-              </div>
 
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                  Last name
+            {/* Username */}
+            <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                  Username
                 </label>
                 <input
-                  id="lastName"
-                  name="lastName"
+                  id="username"
+                  name="username"
                   type="text"
                   autoComplete="family-name"
                   required
-                  value={formData.lastName}
+                  value={formData.username}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-md border ${errors.lastName ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
-                  placeholder="Last name"
+                  className={`w-full px-4 py-3 rounded-md border ${errors.username ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
+                  placeholder="Username"
                 />
-                {errors.lastName && <p className="mt-1 text-sm text-[#C46262]">{errors.lastName}</p>}
+                {errors.username && <p className="mt-1 text-sm text-[#C46262]">{errors.username}</p>}
               </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={formData.email}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md border ${errors.email ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
-                placeholder="Enter your email"
-              />
-              {errors.email && <p className="mt-1 text-sm text-[#C46262]">{errors.email}</p>}
-            </div>
 
             {/* Password */}
             <div>
@@ -210,31 +154,6 @@ function SignupPage() {
               {errors.confirmPassword && <p className="mt-1 text-sm text-[#C46262]">{errors.confirmPassword}</p>}
             </div>
 
-            {/* Terms Agreement */}
-            <div>
-              <div className="flex items-start">
-                <input
-                  id="agreeToTerms"
-                  name="agreeToTerms"
-                  type="checkbox"
-                  checked={formData.agreeToTerms}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-[#4A90A0] focus:ring-[#4A90A0] border-gray-300 rounded mt-1"
-                />
-                <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-gray-700">
-                  I agree to the{' '}
-                  <a href="#" className="text-[#4A90A0] hover:text-[#3A7080] transition-colors">
-                    Terms of Service
-                  </a>{' '}
-                  and{' '}
-                  <a href="#" className="text-[#4A90A0] hover:text-[#3A7080] transition-colors">
-                    Privacy Policy
-                  </a>
-                </label>
-              </div>
-              {errors.agreeToTerms && <p className="mt-1 text-sm text-[#C46262]">{errors.agreeToTerms}</p>}
-            </div>
-
             <button
               type="submit"
               disabled={isLoading}
@@ -266,14 +185,14 @@ function SignupPage() {
         </div>
 
         {/* Support Link */}
-        <div className="mt-6 text-center">
+        {/* <div className="mt-6 text-center">
           <p className="text-sm text-gray-500">
             Need help?{' '}
             <a href="#" className="text-[#4A90A0] hover:text-[#3A7080] transition-colors">
               Contact support
             </a>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   )

@@ -120,3 +120,37 @@ export async function addMoodEntry(userId: string, date: string, mood: number): 
   const data = await response.json()
   return { date: data.entry.date, mood: data.entry.mood }
 }
+
+/**
+ * Signup a new user
+ */
+export async function signupUser({ name, password }: { name: string; password: string }) {
+  const response = await fetch(`${API_BASE_URL}/signup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, password }),
+  })
+  if (!response.ok) {
+    throw new Error('Signup failed: ' + response.statusText)
+  }
+  return await response.json()
+}
+
+/**
+ * Login a user
+ */
+export async function loginUser({ name, password }: { name: string; password: string }) {
+  const response = await fetch(`${API_BASE_URL}/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, password }),
+  })
+  if (!response.ok) {
+    throw new Error('Login failed: ' + response.statusText)
+  }
+  return await response.json()
+}
