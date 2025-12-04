@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { addMoodEntry } from '@/lib/api'
 import type { MoodEntry, MoodLevel } from '@/types/dashboard'
 
 import { getMoodEmoji, getMoodLabel } from '../utils'
@@ -6,39 +8,58 @@ import { getMoodEmoji, getMoodLabel } from '../utils'
 const MoodCheckin = ({ moodHistory } : { moodHistory: MoodEntry[] }) => {
   const [selectedMood, setSelectedMood] = useState<MoodLevel | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const userId = 'user123' // Replace with real user context in production
+
+  const queryClient = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: (mood: MoodLevel) => {
+      const today = new Date().toISOString().split('T')[0]
+      return addMoodEntry(userId, today, mood)
+    },
+    onSuccess: () => {
+      setIsSubmitting(false)
+      // Invalidate mood entries so CalendarView updates
+      queryClient.invalidateQueries({ queryKey: ['dashboard', 'mood-entries', userId] })
+    },
+    onError: () => {
+      setIsSubmitting(false)
+      // Optionally show error message
+    },
+  })
   
   const todayEntry = moodHistory.find(entry => entry.date === new Date().toISOString().split('T')[0])
   
-  const handleMoodSelect = async (mood: MoodLevel) => {
+  const handleMoodSelect = (mood: MoodLevel) => {
     setSelectedMood(mood)
     setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    setIsSubmitting(false)
-    // In real app, would update the mood history and refresh the component
-    console.log('Mood saved:', mood)
+    mutation.mutate(mood, {
+      onSuccess: () => {
+        setIsEditing(false)
+      }
+    })
   }
   
   // Show current mood if already logged (or just selected)
-  if (todayEntry || selectedMood) {
+  if ((todayEntry || selectedMood) && !isEditing) {
     const displayMood = selectedMood || todayEntry!.mood
     return (
-      <div className="p-6 bg-white rounded-xl shadow-sm relative">
+      <div className="p-6 bg-white rounded-xl shadow-sm relative h-full">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">Today's Mood</h3>
           {todayEntry && (
             <button 
-              onClick={() => setSelectedMood(null)}
+              onClick={() => {
+                setSelectedMood(null)
+                setIsEditing(true)
+              }}
               className="text-xs text-[#4A90A0] hover:text-[#70A8A2] transition-colors"
             >
               Update
             </button>
           )}
         </div>
-        
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 py-4">
           <div className="w-16 h-16 bg-[#D8EFE8] rounded-full flex items-center justify-center text-2xl">
             {getMoodEmoji(displayMood)}
           </div>
@@ -51,7 +72,6 @@ const MoodCheckin = ({ moodHistory } : { moodHistory: MoodEntry[] }) => {
             </p>
           </div>
         </div>
-        
         {selectedMood && !todayEntry && (
           <div className="mt-4 p-3 bg-[#D8EFE8] rounded-lg">
             <div className="flex items-center gap-2 text-sm text-[#4A90A0]">
@@ -89,7 +109,7 @@ const MoodCheckin = ({ moodHistory } : { moodHistory: MoodEntry[] }) => {
       </div>
       
       {isSubmitting && (
-        <div className="mt-4 text-center">
+        <div className="text-center">
           <div className="inline-flex items-center gap-2 text-sm text-gray-600">
             <div className="w-4 h-4 border-2 border-[#4A90A0] border-t-transparent rounded-full animate-spin"></div>
             Saving your mood...

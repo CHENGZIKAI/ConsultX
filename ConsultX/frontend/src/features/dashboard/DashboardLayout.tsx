@@ -1,93 +1,92 @@
-import type { MoodEntry } from '@/types/dashboard'
 import CalendarView from './components/CalendarView'
 import WelcomeHeader from './components/WelcomeHeader'
 import SessionHistory from './components/SessionHistory'
 import MoodCheckIn from './components/MoodCheckIn'
+import { useDashboardData } from '@/hooks/useDashboardData'
 
-
-// Mock user data
-const mockUser = {
-  name: 'Alex',
-}
-
-// Mock weather data
-const mockWeather = {
-  temperature: 72,
-  description: 'Sunny',
-}
-
-// Mock calendar data
-const mockCalendarEvents: MoodEntry[] = [
-  { date: '2025-11-21', mood: 5 },
-  { date: '2025-11-20', mood: 4 },
-  { date: '2025-11-19', mood: 3 },
-  { date: '2025-11-18', mood: 5 },
-  { date: '2025-11-17', mood: 3 },
-  { date: '2025-11-16', mood: 4 },
-  { date: '2025-11-15', mood: 2 },
-  { date: '2025-11-14', mood: 2 },
-]
-
-const mockMoodHistory: MoodEntry[] = [
-  //   { date: '2025-11-21', mood: 5 },
-  { date: '2025-11-20', mood: 4 },
-  { date: '2025-11-19', mood: 3 },
-  { date: '2025-11-18', mood: 5 },
-  { date: '2025-11-17', mood: 3 },
-  { date: '2025-11-16', mood: 4 },
-  { date: '2025-11-15', mood: 2 },
-  { date: '2025-11-14', mood: 2 },
-]
-
-// Mock Sessions - would come from props or state in real app
-const mockSessions: Session[] = [
-  {
-    id: '1',
-    date: '2025-11-19',
-    duration: 45,
-    notes: 'Discussed stress management techniques',
-    type: 'therapy',
-  },
-  {
-    id: '2',
-    date: '2025-11-17',
-    duration: 30,
-    notes: 'Practiced breathing exercises',
-    type: 'therapy',
-  },
-  {
-    id: '3',
-    date: '2025-11-15',
-    duration: 60,
-    notes: 'Explored coping strategies for anxiety',
-    type: 'therapy',
-  },
-]
 
 const DashboardLayout = () => {
+  // For now, using a hardcoded userId - in real app this would come from auth context
+  const userId = 'user123'
+  
+  // Fetch all dashboard data using React Query
+  const {
+    isLoading,
+    isError,
+    errors,
+    user,
+    weather,
+    moodEntries,
+    sessions,
+  } = useDashboardData(userId)
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-[#F6F4F2] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (isError) {
+    return (
+      <div className="h-screen bg-[#F6F4F2] flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">⚠️ Error Loading Dashboard</div>
+          <div className="space-y-2">
+            {errors.map((error, index) => (
+              <p key={index} className="text-red-600 text-sm">
+                {error?.message || 'Unknown error occurred'}
+              </p>
+            ))}
+          </div>
+          <button 
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Prepare data for components (with fallbacks)
+  const userData = user ? { name: user.name } : { name: 'Loading...' }
+  const weatherData = weather ? {
+    temperature: weather.temperature,
+    description: weather.description
+  } : { temperature: 0, description: 'Loading...' }
+
   return (
     <div className="h-screen bg-[#F6F4F2]">
       {/* Outer container must allow children to shrink */}
       <div className="max-w-7xl mx-auto p-6 h-full flex flex-col min-h-0">
         {/* Header (auto height) */}
         <div className="mb-6">
-          <WelcomeHeader user={mockUser} weather={mockWeather} />
+          <WelcomeHeader user={userData} weather={weatherData} />
         </div>
 
         {/* Main grid area fills remaining height */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0 bg-blue-100">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
           {/* LEFT COLUMN */}
-          <div className="lg:col-span-2 gap-6 h-full min-h-0 bg-green-100">
-            <SessionHistory sessions={mockSessions} />
+          <div className="lg:col-span-2 gap-6 h-full min-h-0">
+            <SessionHistory sessions={sessions || []} />
           </div>
 
           {/* RIGHT COLUMN */}
-          <div className="flex flex-col gap-6 h-full min-h-0 bg-amber-100">
+          <div className="flex flex-col gap-6 h-full min-h-0">
             <div className="flex-1">
-              <MoodCheckIn moodHistory={mockMoodHistory} />
+              <MoodCheckIn moodHistory={moodEntries || []} />
             </div>
             <div className="flex-2">
-              <CalendarView calendarData={mockCalendarEvents} />
+              <CalendarView calendarData={moodEntries || []} />
+              {/* <CheckinTabs calendarData={moodEntries || []}  /> */}
             </div>
           </div>
         </div>
@@ -97,26 +96,3 @@ const DashboardLayout = () => {
 }
 
 export default DashboardLayout
-
-// <div className="max-w-7xl mx-auto p-6 flex flex-col h-full overflow-y-auto">
-//       {/* Welcome Header */}
-//       <WelcomeHeader user={mockUser} weather={mockWeather} />
-
-//       {/* Main Dashboard Grid */}
-//       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 grow h-4/5">
-//         {/* Left Column */}
-//         <div className="lg:col-span-2 space-y-6">
-//             {/* Mood Check-In */}
-//           <MoodCheckIn moodHistory={mockMoodHistory} />
-//             {/* Session History */}
-//             <SessionHistory sessions={mockSessions} />
-//         </div>
-
-//         {/* Right Column */}
-//         <div className="space-y-6">
-//           <div className="max-h-full bg-white rounded-xl shadow-sm p-2">
-//             <CalendarView calendarData={mockCalendarEvents} />
-//           </div>
-//         </div>
-//       </div>
-//     </div>
