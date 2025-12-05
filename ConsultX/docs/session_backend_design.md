@@ -23,7 +23,7 @@ The initial scope intentionally focuses on session tracking and safety telemetry
 - Local-first development using the Python standard library only (no external installs).
 - Storage back-end must be lightweight, embeddable, and support concurrent read access.
 - Clear separation between analysis, persistence, and transport layers for future replacement or scaling.
-- Deterministic risk scoring built from lexicon-based heuristics, ready to be swapped for ML classifiers once available.
+- Risk scoring delegated to the RAG risk module (`backend.core.risk_types`), with lexicon sentiment kept lightweight and dependency-free.
 - Endpoints optionally protected by API-key authentication for rapid environment hardening.
 
 ## High-Level Architecture
@@ -43,7 +43,7 @@ The initial scope intentionally focuses on session tracking and safety telemetry
 
 - **REST Controller (`backend/api.py`)**: Minimal HTTP handler that translates JSON requests into service calls, enforces API-key authentication, and serialises responses.
 - **Session Service (`backend/session_tracking.py`)**: Core orchestration layer coordinating storage, rolling buffers, and the analysis module.
-- **Risk Engine (`backend/analysis.py`)**: Provides sentiment and risk scoring using lexicon heuristics and keyword detection.
+- **Risk Engine (`backend/analysismodel.py`)**: Calls the RAG risk model (`backend.core.risk_types`) for scoring while tagging sentiment locally.
 - **Persistence (`backend/storage.py`)**: SQLite-backed repository implementing CRUD for sessions, messages, metrics, and buffer snapshots.
 - **Shared Models (`backend/models.py`)**: Dataclasses and enums describing session entities and API payloads.
 
@@ -102,7 +102,7 @@ The initial scope intentionally focuses on session tracking and safety telemetry
 
 ## Risk Adapters & External Providers
 - The `RiskClassifier` maintains a register of adapters (callables returning `RiskAssessment`).
-- Adapters can augment heuristics by contributing flagged phrases, raising tiers, or appending notes.
+- Adapters can augment RAG scoring by contributing flagged phrases, raising tiers, or appending notes.
 - `SessionTracker.register_risk_adapter` exposes the registration hook, so downstream code can plug in hosted classifiers, rule engines, or human-in-the-loop review workflows without modifying core logic.
 - Adapter failures are captured and surfaced as diagnostic notes to avoid silent degradations.
 

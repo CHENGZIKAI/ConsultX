@@ -4,7 +4,7 @@ import uuid
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
 
-from .analysis import RiskAdapter, RiskClassifier, SentimentAnalyzer
+from .analysismodel import RiskAdapter, RiskClassifier, SentimentAnalyzer
 from .models import (
     BufferSnapshot,
     MessageRecord,

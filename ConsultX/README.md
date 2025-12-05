@@ -9,13 +9,13 @@ This repository delivers the first milestone for ConsultX: a self-contained back
 - SQLite persistence for sessions, messages, metrics, and buffers.
 - Automatic summary generation with sentiment trends, tier counts, and resource suggestions.
 - Optional API-key authentication on every endpoint.
-- Adapter-friendly risk engine so external classifiers can augment heuristic scoring.
+- Adapter-friendly risk engine so external classifiers can augment RAG risk scoring.
 - Unit tests covering core workflows.
 
 ## Project Layout
 ```
 backend/
-  analysis.py          # Sentiment + risk heuristics
+  analysismodel.py     # Sentiment + risk routing to RAG risk_types
   api.py               # HTTP server exposing REST endpoints
   models.py            # Dataclasses and enums
   session_tracking.py  # Orchestration service
@@ -84,7 +84,7 @@ python -m unittest discover -s tests
 
 ## Extensibility
 - Register advanced risk detectors at runtime: `tracker.register_risk_adapter(callable)` where the callable returns a `RiskAssessment`. Adapters can escalate tiers, contribute notes, and flag custom keywords.
-- Expand the resource catalog by updating `backend/analysis.py` to map new keywords to referrals or exercises.
+- Expand the resource catalog by updating `backend/analysismodel.py` to map new keywords to referrals or exercises or to swap in a different risk module.
 
 ## Next Steps
 1. **Identity Provider Integration**: Swap API-key auth for OAuth/JWT backed by the real user directory.
