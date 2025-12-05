@@ -120,10 +120,10 @@ class SentimentAnalyzer:
 
 class RiskClassifier:
     """
-    Risk evaluator that delegates scoring to the RAG risk model (`backend.core.risk_types`).
+    Risk evaluator that blends the existing heuristics with the new RAG risk module.
 
-    Heuristic keyword checks are retained only to surface flagged keywords/resources and
-    do not influence the tier or score.
+    The heuristics keep backward-compatible flagged keywords and resource suggestions,
+    while the RAG model (backend.core.risk_types) can escalate tiers when available.
     """
 
     def __init__(
@@ -131,9 +131,12 @@ class RiskClassifier:
         adapters: Optional[Sequence[RiskAdapter]] = None,
         *,
         rag_module=None,
+        enable_rag: bool = True,
     ) -> None:
         self.adapters: List[RiskAdapter] = list(adapters or [])
-        self._rag_module = rag_module or self._load_rag_module()
+        self._rag_module = None
+        if enable_rag:
+            self._rag_module = rag_module or self._load_rag_module()
 
     CRISIS_PHRASES = {
         "kill myself",
@@ -243,7 +246,39 @@ class RiskClassifier:
         sentiment: SentimentResult,
         recent_tiers: Sequence[RiskTier] | None = None,
     ) -> RiskAssessment:
+        heuristic = self._heuristic_assess(text, sentiment, recent_tiers or [])
+
+        tier = heuristic.tier
+        score = heuristic.score
+        flagged = list(heuristic.flagged_keywords)
+        notes = list(heuristic.notes)
+
         rag_assessment, rag_notes = self._rag_assess(text)
+        if rag_notes:
+            notes.extend(rag_notes)
+        if rag_assessment:
+            flagged.extend(rag_assessment.flagged_keywords)
+            notes.extend(rag_assessment.notes)
+            if _RISK_SEVERITY[rag_assessment.tier] > _RISK_SEVERITY[tier]:
+                tier = rag_assessment.tier
+            score = max(score, rag_assessment.score)
+
+        tier, score, adapter_flagged, adapter_notes = self._apply_adapters(text, sentiment, tier, score)
+        flagged.extend(adapter_flagged)
+        notes.extend(adapter_notes)
+
+        unique_flagged = sorted(set(flagged))
+        return RiskAssessment(tier=tier, score=round(score, 3), flagged_keywords=unique_flagged, notes=notes)
+
+    def _heuristic_assess(
+        self,
+        text: str,
+        sentiment: SentimentResult,
+        recent_tiers: Sequence[RiskTier],
+    ) -> RiskAssessment:
+        lowered = text.lower()
+        flagged: List[str] = []
+        notes: List[str] = []
 
         if rag_assessment:
             tier = rag_assessment.tier
@@ -261,26 +296,14 @@ class RiskClassifier:
         # Add flagged keywords for downstream resources without changing the tier.
         flagged.extend(self._extract_keywords(text))
 
-        tier, score, adapter_flagged, adapter_notes = self._apply_adapters(text, sentiment, tier, score)
-        flagged.extend(adapter_flagged)
-        notes.extend(adapter_notes)
-
         unique_flagged = sorted(set(flagged))
         return RiskAssessment(tier=tier, score=round(score, 3), flagged_keywords=unique_flagged, notes=notes)
 
-    def _extract_keywords(self, text: str) -> List[str]:
-        lowered = text.lower()
-        flagged: List[str] = []
-        flagged.extend(self._find_phrases(lowered, self.CRISIS_PHRASES))
-        flagged.extend(self._find_keywords(lowered, self.HIGH_KEYWORDS))
-        flagged.extend(self._find_keywords(lowered, self.CAUTION_KEYWORDS))
-        return flagged
-
     def _rag_assess(self, text: str) -> tuple[Optional[RiskAssessment], List[str]]:
         if not self._rag_module:
-            return None, ["RAG risk module unavailable."]
+            return None, []
         try:
-            raw = self._call_rag_fn(self._rag_module, text)
+            raw = self._rag_module.assess(text)
         except Exception as exc:  # pragma: no cover - defensive logging
             return None, [f"RAG risk module error: {exc}"]
         if not isinstance(raw, dict):
@@ -319,13 +342,6 @@ class RiskClassifier:
         except Exception:
             return None
         return risk_types
-
-    @staticmethod
-    def _call_rag_fn(mod, text: str):
-        for name in ("assess", "analyze", "analyze_text", "evaluate", "predict", "classify", "run"):
-            if hasattr(mod, name):
-                return getattr(mod, name)(text)
-        raise RuntimeError("RAG risk module is missing a callable entry point.")
 
     @staticmethod
     def _find_phrases(text: str, phrases: Iterable[str]) -> List[str]:

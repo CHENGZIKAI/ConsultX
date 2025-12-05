@@ -15,7 +15,7 @@ This repository delivers the first milestone for ConsultX: a self-contained back
 ## Project Layout
 ```
 backend/
-  analysismodel.py     # Sentiment + risk routing to RAG risk_types
+  analysismodel.py     # Sentiment + risk heuristics (with optional RAG risk_types)
   api.py               # HTTP server exposing REST endpoints
   models.py            # Dataclasses and enums
   session_tracking.py  # Orchestration service

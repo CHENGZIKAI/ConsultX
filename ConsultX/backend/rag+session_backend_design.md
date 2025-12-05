@@ -23,7 +23,7 @@ The initial scope intentionally focuses on session tracking and safety telemetry
 - Local-first development using the Python standard library only (no external installs).
 - Storage back-end must be lightweight, embeddable, and support concurrent read access.
 - Clear separation between analysis, persistence, and transport layers for future replacement or scaling.
-- Risk scoring delegated to the RAG risk module (`backend.core.risk_types`), with local sentiment kept lightweight and dependency-free.
+- Deterministic risk scoring built from lexicon-based heuristics, ready to be swapped for ML classifiers once available.
 - Endpoints optionally protected by API-key authentication for rapid environment hardening.
 
 ## High-Level Architecture
@@ -52,7 +52,7 @@ The initial scope intentionally focuses on session tracking and safety telemetry
 
 - **REST Controller (`backend/api.py`)**: Minimal HTTP handler that translates JSON requests into service calls, enforces API-key authentication, and serialises responses.
 - **Session Service (`backend/session_tracking.py`)**: Core orchestration layer coordinating storage, rolling buffers, and the analysis module.
-- **Risk Engine (`backend/analysismodel.py`)**: Calls the RAG risk model (`backend.core.risk_types`) for scoring while tagging sentiment locally.
+- **Risk Engine (`backend/analysismodel.py`)**: Provides sentiment and risk scoring using lexicon heuristics with optional RAG risk_types escalation.
 - **Persistence (`backend/storage.py`)**: SQLite-backed repository implementing CRUD for sessions, messages, metrics, and buffer snapshots.
 - **Shared Models (`backend/models.py`)**: Dataclasses and enums describing session entities and API payloads.
 - **Therapy Core (`backend/core/*`)**: 
