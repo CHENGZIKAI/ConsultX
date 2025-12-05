@@ -52,6 +52,18 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
             self._create_session()
             return
 
+        if path == "/mood-entries" and len(segments) == 1:
+            self._add_mood_entry()
+            return
+
+        if path == "/signup" and len(segments) == 1:
+            self._signup_user()
+            return
+
+        if path == "/login" and len(segments) == 1:
+            self._login_user()
+            return
+
         if len(segments) >= 3 and segments[0] == "sessions":
             session_id = segments[1]
             if len(segments) == 3 and segments[2] == "messages":
@@ -82,7 +94,27 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
                 self._get_summary(session_id)
                 return
 
+        if path == "/weather" and len(segments) == 1:
+            self._get_weather()
+            return
+
+        if path == "/mood-entries" and len(segments) == 1:
+            self._get_mood_entries()
+            return
+
+        if len(segments) >= 2 and segments[0] == "user":
+            user_id = segments[1]
+            if len(segments) == 2:
+                self._get_user(user_id)
+                return
+
         self._send_error(HTTPStatus.NOT_FOUND, "Endpoint not found.")
+
+    def do_OPTIONS(self) -> None:  # noqa: D401
+        """Handle CORS preflight requests."""
+        self.send_response(HTTPStatus.NO_CONTENT)
+        self._send_cors_headers()
+        self.end_headers()
 
     # --- Endpoint implementations --------------------------------------------
 
@@ -203,6 +235,115 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
             self._send_error(HTTPStatus.NOT_FOUND, str(exc))
             return
         self._send_json({"summary": summary.to_dict()})
+        
+    
+    def _signup_user(self) -> None:
+        payload = self._read_json()
+        username = payload.get("name")
+        password = payload.get("password")
+        if not username or not password:
+            self._send_error(HTTPStatus.BAD_REQUEST, "'name' and 'password' are required.")
+            return
+        try:
+            with open("responses.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+        if username in data:
+            self._send_error(HTTPStatus.CONFLICT, "Username already exists.")
+            return
+        data[username] = {"password": password, "mood_entries": []}
+        try: 
+            with open("responses.json", "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except Exception as e:
+            self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, f"Failed to write user: {e}")
+            return
+        self._send_json({"success": True, "user": username})
+        
+    
+    def _login_user(self) -> None:
+        payload = self._read_json()
+        username = payload.get("name")
+        password = payload.get("password")
+        if not username or not password:
+            self._send_error(HTTPStatus.BAD_REQUEST, "'name' and 'password' are required.")
+            return
+        try:
+            with open("responses.json", "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            self._send_error(HTTPStatus.INTERNAL_SERVER_ERROR, "Could not read user data.")
+            return
+        user = data.get(username)
+        if not user or user.get("password") != password:
+            self._send_error(HTTPStatus.UNAUTHORIZED, "Invalid username or password.")
+            return
+        self._send_json({"success": True, "user": username})
+    
+    def _get_user(self, user_id: str) -> None:
+        """Get user profile data."""
+        # Hardcoded mock data for now
+        mock_user = {
+            "id": user_id,
+            "name": user_id,
+            "email": "alex@example.com",
+            "joined_date": "2025-01-15"
+        }
+        self._send_json({"user": mock_user})
+
+    def _get_weather(self) -> None:
+        """Get current weather data."""
+        # Hardcoded mock data for now
+        mock_weather = {
+            "temperature": 72,
+            "description": "Sunny",
+            "humidity": 45,
+            "location": "San Francisco, CA"
+        }
+        self._send_json({"weather": mock_weather})
+
+    def _get_mood_entries(self) -> None:
+        """Get mood entries for a user."""
+        query = parse_qs(urlparse(self.path).query)
+        user_id = query.get("user_id", [None])[0]
+        
+        if not user_id:
+            self._send_error(HTTPStatus.BAD_REQUEST, "'user_id' query parameter is required.")
+            return
+
+        # load mood entries from storage - for now, return mock data from json file
+        with open("responses.json", "r") as f:
+            data = json.load(f)
+            if user_id not in data:
+                data[user_id] = {"mood_entries": []}
+            mock_mood_entries = data[user_id]["mood_entries"]
+            # mock_mood_entries = json.load(f)[user_id]["mood_entries"]
+        self._send_json({"mood_entries": mock_mood_entries, "user_id": user_id})
+        
+    def _add_mood_entry(self) -> None:
+        payload = self._read_json()
+        user_id = payload.get("user_id")
+        date = payload.get("date")
+        mood = payload.get("mood")
+        if not user_id or not date or not mood:
+            self._send_error(HTTPStatus.BAD_REQUEST, "'user_id', 'date', and 'mood' are required.")
+            return
+        
+        # Store the mood entry - for now, add it mock data file
+        with open("responses.json", "r+") as f:
+            data = json.load(f)
+            if user_id not in data:
+                data[user_id] = {"mood_entries": []}
+            data[user_id]["mood_entries"].append({
+                "date": date,
+                "mood": mood
+            })
+            f.seek(0)
+            json.dump(data, f, indent=4)
+            f.truncate()
+        entry = {"user_id": user_id, "date": date, "mood": mood}
+        self._send_json({"entry": entry}, status=HTTPStatus.CREATED)
 
     # --- Utility helpers -----------------------------------------------------
 
@@ -222,6 +363,7 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
     def _send_json(self, payload, status: HTTPStatus = HTTPStatus.OK) -> None:
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
+        self._send_cors_headers()
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
@@ -231,6 +373,7 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
         payload = {"error": message, "status": status.value}
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
+        self._send_cors_headers()
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         if extra_headers:
@@ -238,6 +381,12 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
                 self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)
+
+    def _send_cors_headers(self) -> None:
+        """Send CORS headers to allow frontend access."""
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
     def _ensure_authenticated(self) -> bool:
         if not AUTH.is_enabled():
