@@ -43,7 +43,7 @@ The initial scope intentionally focuses on session tracking and safety telemetry
 
 - **REST Controller (`backend/api.py`)**: Minimal HTTP handler that translates JSON requests into service calls, enforces API-key authentication, and serialises responses.
 - **Session Service (`backend/session_tracking.py`)**: Core orchestration layer coordinating storage, rolling buffers, and the analysis module.
-- **Risk Engine (`backend/analysis.py`)**: Provides sentiment and risk scoring using lexicon heuristics and keyword detection.
+- **Risk Engine (`backend/analysismodel.py`)**: Provides sentiment and risk scoring using lexicon heuristics with optional RAG risk_types escalation.
 - **Persistence (`backend/storage.py`)**: SQLite-backed repository implementing CRUD for sessions, messages, metrics, and buffer snapshots.
 - **Shared Models (`backend/models.py`)**: Dataclasses and enums describing session entities and API payloads.
 

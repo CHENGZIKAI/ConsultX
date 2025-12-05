@@ -7,10 +7,9 @@ environments without external dependencies.
 
 __all__ = [
     "models",
-    "analysis",
+    "analysismodel",
     "storage",
     "session_tracking",
 ]
 
 __version__ = "0.1.0"
-
