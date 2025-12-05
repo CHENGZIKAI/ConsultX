@@ -1,52 +1,37 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { signupUser } from '@/lib/api'
 
-export const Route = createFileRoute('/signup')({
+export const Route = createFileRoute('/signup')({  
   component: SignupPage,
 })
 
 function SignupPage() {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    confirmPassword: '',
-  })
+  const [userId, setUserId] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
 
   const navigate = useNavigate()
  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }))
+    const { value } = e.target
+    setUserId(value)
     
     // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
+    if (errors.userId) {
+      setErrors(prev => ({ ...prev, userId: '' }))
     }
   }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.username) {
-      newErrors.username = 'Username is required'
+    if (!userId.trim()) {
+      newErrors.userId = 'User ID is required'
+    } else if (userId.length < 3) {
+      newErrors.userId = 'User ID must be at least 3 characters'
+    } else if (!/^[a-zA-Z0-9_]+$/.test(userId)) {
+      newErrors.userId = 'User ID can only contain letters, numbers, and underscores'
     }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
-    }
-
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -59,14 +44,17 @@ function SignupPage() {
     }
     setIsLoading(true)
     try {
-      await signupUser({ name: formData.username, password: formData.password })
-      // You can redirect or show a success message here
-      // For now, just log success
-      console.log('Signup successful')
-      navigate({ to: '/login' })
+      // Simulate API call to register user ID
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Store user ID in localStorage for now
+      localStorage.setItem('userId', userId)
+      
+      // Navigate to dashboard
+      navigate({ to: '/dashboard' })
       
     } catch (err: any) {
-      setErrors({ general: err?.message || 'Something went wrong. Try again when you\'re ready.' })
+      setErrors({ general: err?.message || 'Something went wrong. Please try again.' })
     } finally {
       setIsLoading(false)
     }
@@ -79,10 +67,10 @@ function SignupPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-medium text-gray-900 mb-2">
-              Create your account
+              Enter your User ID
             </h1>
             <p className="text-gray-600 text-base">
-              Begin your wellness journey today
+              Choose a unique identifier to get started
             </p>
           </div>
 
@@ -96,63 +84,25 @@ function SignupPage() {
           {/* Signup Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
 
-            {/* Username */}
+            {/* User ID */}
             <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                  Username
+                <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-2">
+                  User ID
                 </label>
                 <input
-                  id="username"
-                  name="username"
+                  id="userId"
+                  name="userId"
                   type="text"
-                  autoComplete="family-name"
+                  autoComplete="username"
                   required
-                  value={formData.username}
+                  value={userId}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-md border ${errors.username ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
-                  placeholder="Username"
+                  className={`w-full px-4 py-3 rounded-md border ${errors.userId ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
+                  placeholder="Enter your unique user ID"
                 />
-                {errors.username && <p className="mt-1 text-sm text-[#C46262]">{errors.username}</p>}
+                {errors.userId && <p className="mt-1 text-sm text-[#C46262]">{errors.userId}</p>}
+                <p className="mt-1 text-sm text-gray-500">At least 3 characters, letters, numbers, and underscores only</p>
               </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md border ${errors.password ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
-                placeholder="Create a password"
-              />
-              {errors.password && <p className="mt-1 text-sm text-[#C46262]">{errors.password}</p>}
-              <p className="mt-1 text-sm text-gray-500">Must be at least 8 characters</p>
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full px-4 py-3 rounded-md border ${errors.confirmPassword ? 'border-[#C46262]' : 'border-gray-300'} bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors`}
-                placeholder="Confirm your password"
-              />
-              {errors.confirmPassword && <p className="mt-1 text-sm text-[#C46262]">{errors.confirmPassword}</p>}
-            </div>
 
             <button
               type="submit"
@@ -162,10 +112,10 @@ function SignupPage() {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Creating account...
+                  Confirming...
                 </div>
               ) : (
-                'Create account'
+                'Continue to Dashboard'
               )}
             </button>
           </form>

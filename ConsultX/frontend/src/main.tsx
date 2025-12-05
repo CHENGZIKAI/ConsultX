@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { routeTree } from './routeTree.gen'
 import './styles.css'
 
+import { UserProvider } from '@/context/UserContext'
+
 const queryClient = new QueryClient()
 
 // Set up a Router instance
@@ -32,8 +34,10 @@ const rootElement = document.getElementById('app')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
+    <UserProvider>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
-    </QueryClientProvider>,
+    </QueryClientProvider>
+    </UserProvider>
   )
 }

@@ -1,4 +1,5 @@
 import type { MoodEntry } from '@/types/dashboard'
+import type { ChatSession, SendMessageResponse, SessionSummary, CreateSessionResponse } from '@/types/session'
 
 const API_BASE_URL = 'http://localhost:8000'
 
@@ -41,8 +42,8 @@ export interface MoodEntriesResponse {
   user_id: string
 }
 
-export interface SessionsResponse {
-  sessions: Session[]
+export interface ChatSessionsResponse {
+  sessions: ChatSession[]
 }
 
 /**
@@ -90,14 +91,14 @@ export async function fetchMoodEntries(userId: string): Promise<MoodEntry[]> {
 /**
  * Fetch sessions for a user
  */
-export async function fetchSessions(userId: string): Promise<Session[]> {
+export async function fetchSessions(userId: string): Promise<ChatSession[]> {
   const response = await fetch(`${API_BASE_URL}/sessions?user_id=${userId}`)
   
   if (!response.ok) {
     throw new Error(`Failed to fetch sessions: ${response.statusText}`)
   }
   
-  const data: SessionsResponse = await response.json()
+  const data: ChatSessionsResponse = await response.json()
   return data.sessions
 }
 
@@ -105,6 +106,7 @@ export async function fetchSessions(userId: string): Promise<Session[]> {
  * Add a new mood entry for a user
  */
 export async function addMoodEntry(userId: string, date: string, mood: number): Promise<MoodEntry> {
+  console.log('Adding mood entry:', { userId, date, mood })
   const response = await fetch(`${API_BASE_URL}/mood-entries`, {
     method: 'POST',
     headers: {
@@ -152,5 +154,76 @@ export async function loginUser({ name, password }: { name: string; password: st
   if (!response.ok) {
     throw new Error('Login failed: ' + response.statusText)
   }
+  return await response.json()
+}
+
+/**
+ * Create a new chat session
+ */
+export async function createChatSession(userId: string): Promise<ChatSession> {
+  const response = await fetch(`${API_BASE_URL}/sessions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ user_id: userId }),
+  })
+  
+  if (!response.ok) {
+    throw new Error(`Failed to create session: ${response.statusText}`)
+  }
+  const res: CreateSessionResponse = await response.json()
+  console.log('Created session response:', res);
+  
+  return res.session
+}
+
+/**
+ * Send a message to the chat session
+ */
+export async function sendChatMessage(sessionId: string, content: string): Promise<SendMessageResponse> {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ sender: 'user', content }),
+  })
+  
+  if (!response.ok) {
+    throw new Error(`Failed to send message: ${response.statusText}`)
+  }
+  
+  const data = await response.json()
+  console.log('Send message response:', data)
+  
+  return data
+}
+
+/**
+ * End a chat session and get summary
+ */
+export async function endChatSession(sessionId: string): Promise<SessionSummary> {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/end`, {
+    method: 'POST',
+  })
+  
+  if (!response.ok) {
+    throw new Error(`Failed to end session: ${response.statusText}`)
+  }
+  
+  return await response.json()
+}
+
+/**
+ * Get session summary
+ */
+export async function getSessionSummary(sessionId: string): Promise<SessionSummary> {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/summary`)
+  
+  if (!response.ok) {
+    throw new Error(`Failed to get session summary: ${response.statusText}`)
+  }
+  
   return await response.json()
 }

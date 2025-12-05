@@ -11,11 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ChatOldRouteImport } from './routes/chat-old'
 import { Route as ChatNewRouteImport } from './routes/chat-new'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FeedbackSessionIdRouteImport } from './routes/feedback.$sessionId'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -25,11 +25,6 @@ const SignupRoute = SignupRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeedbackRoute = FeedbackRouteImport.update({
-  id: '/feedback',
-  path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -52,24 +47,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedbackSessionIdRoute = FeedbackSessionIdRouteImport.update({
+  id: '/feedback/$sessionId',
+  path: '/feedback/$sessionId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat-new': typeof ChatNewRoute
   '/chat-old': typeof ChatOldRoute
   '/dashboard': typeof DashboardRoute
-  '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/feedback/$sessionId': typeof FeedbackSessionIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat-new': typeof ChatNewRoute
   '/chat-old': typeof ChatOldRoute
   '/dashboard': typeof DashboardRoute
-  '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/feedback/$sessionId': typeof FeedbackSessionIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +77,9 @@ export interface FileRoutesById {
   '/chat-new': typeof ChatNewRoute
   '/chat-old': typeof ChatOldRoute
   '/dashboard': typeof DashboardRoute
-  '/feedback': typeof FeedbackRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/feedback/$sessionId': typeof FeedbackSessionIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +88,27 @@ export interface FileRouteTypes {
     | '/chat-new'
     | '/chat-old'
     | '/dashboard'
-    | '/feedback'
     | '/login'
     | '/signup'
+    | '/feedback/$sessionId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/chat-new'
     | '/chat-old'
     | '/dashboard'
-    | '/feedback'
     | '/login'
     | '/signup'
+    | '/feedback/$sessionId'
   id:
     | '__root__'
     | '/'
     | '/chat-new'
     | '/chat-old'
     | '/dashboard'
-    | '/feedback'
     | '/login'
     | '/signup'
+    | '/feedback/$sessionId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,9 +116,9 @@ export interface RootRouteChildren {
   ChatNewRoute: typeof ChatNewRoute
   ChatOldRoute: typeof ChatOldRoute
   DashboardRoute: typeof DashboardRoute
-  FeedbackRoute: typeof FeedbackRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  FeedbackSessionIdRoute: typeof FeedbackSessionIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -135,13 +135,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/feedback': {
-      id: '/feedback'
-      path: '/feedback'
-      fullPath: '/feedback'
-      preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -172,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feedback/$sessionId': {
+      id: '/feedback/$sessionId'
+      path: '/feedback/$sessionId'
+      fullPath: '/feedback/$sessionId'
+      preLoaderRoute: typeof FeedbackSessionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -180,9 +180,9 @@ const rootRouteChildren: RootRouteChildren = {
   ChatNewRoute: ChatNewRoute,
   ChatOldRoute: ChatOldRoute,
   DashboardRoute: DashboardRoute,
-  FeedbackRoute: FeedbackRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  FeedbackSessionIdRoute: FeedbackSessionIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

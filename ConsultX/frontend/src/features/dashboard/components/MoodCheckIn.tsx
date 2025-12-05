@@ -5,11 +5,12 @@ import type { MoodEntry, MoodLevel } from '@/types/dashboard'
 
 import { getMoodEmoji, getMoodLabel } from '../utils'
 
-const MoodCheckin = ({ moodHistory } : { moodHistory: MoodEntry[] }) => {
+const MoodCheckin = ({ moodHistory, userId } : { moodHistory: MoodEntry[] , userId: string }) => {
   const [selectedMood, setSelectedMood] = useState<MoodLevel | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
-  const userId = 'user123' // Replace with real user context in production
+
+
 
   const queryClient = useQueryClient()
   const mutation = useMutation({

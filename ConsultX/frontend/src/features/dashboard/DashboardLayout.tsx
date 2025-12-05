@@ -1,16 +1,30 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import CalendarView from './components/CalendarView'
 import WelcomeHeader from './components/WelcomeHeader'
 import SessionHistory from './components/SessionHistory'
 import MoodCheckIn from './components/MoodCheckIn'
 import { useDashboardData } from '@/hooks/useDashboardData'
-import { useUser } from '@/context/UserContext'
 
 
 const DashboardLayout = () => {
-  // For now, using a hardcoded userId - in real app this would come from auth context
-  const userId = useUser().username || 'user123'
+  const [userId, setUserId] = useState<string | null>(null)
+  const navigate = useNavigate()
   
-  // Fetch all dashboard data using React Query
+  // Initialize userId from localStorage on component mount
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId')
+    if (storedUserId) {
+      setUserId(storedUserId)
+    } else {
+      // Redirect to signup if no user ID found
+      navigate({ to: '/signup' })
+    }
+  }, [])
+  
+  console.log('DashboardLayout: current userId =', userId)
+  
+  // Fetch all dashboard data using React Query (only when userId is available)
   const {
     isLoading,
     isError,
@@ -19,7 +33,19 @@ const DashboardLayout = () => {
     weather,
     moodEntries,
     sessions,
-  } = useDashboardData(userId)
+  } = useDashboardData(userId || '')
+
+  // Don't render anything until userId is loaded
+  if (!userId) {
+    return (
+      <div className="h-screen bg-[#F6F4F2] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Show loading state
   if (isLoading) {
@@ -83,10 +109,10 @@ const DashboardLayout = () => {
           {/* RIGHT COLUMN */}
           <div className="flex flex-col gap-6 h-full min-h-0">
             <div className="flex-1">
-              <MoodCheckIn moodHistory={moodEntries || []} />
+              <MoodCheckIn moodHistory={moodEntries || []} userId={userId || ''} />
             </div>
             <div className="flex-2">
-              <CalendarView calendarData={moodEntries || []} />
+              <CalendarView calendarData={moodEntries || []}/>
               {/* <CheckinTabs calendarData={moodEntries || []}  /> */}
             </div>
           </div>

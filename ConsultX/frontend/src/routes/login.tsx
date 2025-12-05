@@ -1,34 +1,30 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { loginUser } from '@/lib/api'
+import { useUser } from '@/context/UserContext'
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
 })
 
 function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const { setUsername: setUserContext } = useUser()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-
-    // TODO: Implement actual login logic
     try {
-      // Placeholder for backend integration
-      console.log('Login attempt:', { email, password })
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // For now, just log success
-      console.log('Login successful')
-
-      // Redirect or update UI on successful login here
-    } catch (err) {
-      setError('Something went wrong. Try again when you\'re ready.')
+      await loginUser({ name: username, password })
+      setUserContext(username)
+      navigate({ to: '/dashboard' })
+    } catch (err: any) {
+      setError(err?.message || 'Invalid username or password.')
     } finally {
       setIsLoading(false)
     }
@@ -58,19 +54,19 @@ function LoginPage() {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email address
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Username
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors"
-                placeholder="Enter your email"
+                placeholder="Enter your username"
               />
             </div>
 
@@ -89,26 +85,6 @@ function LoginPage() {
                 className="w-full px-4 py-3 rounded-md border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#4A90A0] focus:border-transparent transition-colors"
                 placeholder="Enter your password"
               />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-[#4A90A0] focus:ring-[#4A90A0] border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                  Remember me
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-[#4A90A0] hover:text-[#3A7080] transition-colors">
-                  Forgot your password?
-                </a>
-              </div>
             </div>
 
             <button
@@ -139,16 +115,6 @@ function LoginPage() {
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Support Link */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-500">
-            Need help?{' '}
-            <a href="#" className="text-[#4A90A0] hover:text-[#3A7080] transition-colors">
-              Contact support
-            </a>
-          </p>
         </div>
       </div>
     </div>

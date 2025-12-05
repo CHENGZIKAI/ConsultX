@@ -1,16 +1,31 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
 interface UserContextType {
-  username: string | null;
-  setUsername: (username: string | null) => void;
+  username: string;
+  setUsername: (username: string) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [username, setUsername] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>('');
+  
+  // Initialize username from localStorage on mount
+  useEffect(() => {
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUsername(storedUserId);
+    }
+  }, []);
+  
+  // Update localStorage when username changes
+  const handleSetUsername = (newUsername: string) => {
+    setUsername(newUsername);
+    localStorage.setItem('userId', newUsername);
+  };
+  
   return (
-    <UserContext.Provider value={{ username, setUsername }}>
+    <UserContext.Provider value={{ username, setUsername: handleSetUsername }}>
       {children}
     </UserContext.Provider>
   );
