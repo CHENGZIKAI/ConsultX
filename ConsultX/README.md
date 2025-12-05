@@ -8,6 +8,7 @@ This repository delivers the first milestone for ConsultX: a self-contained back
 - Lexicon-driven sentiment and risk classification (tiers: `ok`, `caution`, `high`, `crisis`).
 - SQLite persistence for sessions, messages, metrics, and buffers.
 - Automatic summary generation with sentiment trends, tier counts, and resource suggestions.
+- Optional RAG therapy pipeline (Gemini + retrieval + guardrails) wired via `backend/core_adapter.py`, enabled with environment flags.
 - Optional API-key authentication on every endpoint.
 - Adapter-friendly risk engine so external classifiers can augment heuristic scoring.
 - Unit tests covering core workflows.
@@ -41,6 +42,13 @@ README.md
    ```
    The server listens on `http://127.0.0.1:8000`.
 
+### RAG Integration (optional)
+- Set `CONSULTX_ENABLE_RAG=1` to route user messages through the RAG pipeline (`backend/core_adapter.py` and `backend/core/*`).  
+- Set `CONSULTX_RAG_AUTOREPLY=1` if you want the generated assistant reply auto-appended to the session.  
+- Required runtime inputs: `GOOGLE_API_KEY` plus the vector store built for retrieval (see `backend/core/retrieval.py` defaults).  
+- Optional knobs: `CONSULTX_RAG_MODEL` (default `gemini-2.0-flash`), `CONSULTX_RAG_K` (default `2`), `CONSULTX_RAG_COUNTRY` (default `US`), `CONSULTX_RAG_GUARDRAILS` (`1`/`0`).  
+- If dependencies (Gemini client, langchain/transformers, or the vector DB) are missing, the call is skipped and an error note is returned in the `rag` block without breaking the session tracker.
+
 ### Authentication
 If either `CONSULTX_API_KEYS` or `CONSULTX_API_KEYS_FILE` is supplied, the API enforces authentication. Clients must send one of:
 - `Authorization: Bearer <api-key>`
@@ -54,7 +62,7 @@ Requests without a valid key receive `401 Unauthorized`.
 | `POST` | `/sessions` | Create a session. Body: `{"user_id": "...", "metadata": {...}}`. |
 | `GET`  | `/sessions` | List sessions. Query params: `user_id`, `status`. |
 | `GET`  | `/sessions/{id}` | Fetch metadata, latest buffer snapshot, and cached metrics. |
-| `POST` | `/sessions/{id}/messages` | Append a message (`sender`: `user`/`assistant`/`system`, `content`). |
+| `POST` | `/sessions/{id}/messages` | Append a message (`sender`: `user`/`assistant`/`system`, `content`). Optional flags: `use_rag` (bool) to invoke the RAG pipeline, `auto_reply` (bool) to auto-append the generated assistant turn when RAG is used. Responses include an optional `assistant_message` and `rag` block when present. |
 | `POST` | `/sessions/{id}/end` | Mark session as ended and generate final summary. |
 | `GET`  | `/sessions/{id}/summary` | Retrieve (or recompute) the session summary. |
 

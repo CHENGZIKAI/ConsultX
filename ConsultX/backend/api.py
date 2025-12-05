@@ -140,6 +140,18 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
         payload = self._read_json()
         if payload is None:
             return
+
+        def _coerce_bool(value):
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, str):
+                lowered = value.strip().lower()
+                if lowered in {"1", "true", "yes", "on"}:
+                    return True
+                if lowered in {"0", "false", "no", "off"}:
+                    return False
+            return None
+
         sender_value = payload.get("sender")
         content = payload.get("content")
         if not sender_value or not content:
@@ -156,6 +168,8 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
                 session_id,
                 sender=sender,
                 content=content,
+                use_rag=_coerce_bool(payload.get("use_rag")),
+                auto_reply=_coerce_bool(payload.get("auto_reply")),
             )
         except SessionNotFound as exc:
             self._send_error(HTTPStatus.NOT_FOUND, str(exc))
@@ -164,15 +178,18 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
             self._send_error(HTTPStatus.CONFLICT, str(exc))
             return
 
-        self._send_json(
-            {
-                "message": result.message.to_dict(),
-                "risk": result.risk.to_dict(),
-                "buffer": result.buffer.to_dict(),
-                "metrics": result.metrics.to_dict(),
-            },
-            status=HTTPStatus.CREATED,
-        )
+        response = {
+            "message": result.message.to_dict(),
+            "risk": result.risk.to_dict(),
+            "buffer": result.buffer.to_dict(),
+            "metrics": result.metrics.to_dict(),
+        }
+        if result.assistant_message:
+            response["assistant_message"] = result.assistant_message.to_dict()
+        if result.rag_result:
+            response["rag"] = result.rag_result
+
+        self._send_json(response, status=HTTPStatus.CREATED)
 
     def _end_session(self, session_id: str) -> None:
         try:
