@@ -55,8 +55,8 @@ function RouteComponent() {
   };
 
   const getSentimentTrend = (avgSentiment: number): string => {
-    if (avgSentiment > 0.1) return 'improving';
-    if (avgSentiment < -0.1) return 'declining';
+    if (avgSentiment > 0.5) return 'improving';
+    if (avgSentiment < -0.) return 'declining';
     return 'stable';
   };
 
@@ -140,12 +140,21 @@ function RouteComponent() {
               <div className="flex items-center gap-3">
                 <MessageSquare className="w-5 h-5 text-[#6879A1]" />
                 <div>
-                  <div className="text-sm text-gray-600">Messages</div>
-                  <div className="text-lg font-medium">{summary.summary.metrics.message_count}</div>
+                  <div className="text-sm text-gray-600">User Messages</div>
+                  <div className="text-lg font-medium">{summary.summary.metrics.user_turns}</div>
                 </div>
               </div>
             </div>
-            <div className="bg-[#D8EFE8] rounded-lg p-4">
+            <div className="bg-[#E3E2F0] rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <MessageSquare className="w-5 h-5 text-[#6879A1]" />
+                <div>
+                  <div className="text-sm text-gray-600">Assistant Messages</div>
+                  <div className="text-lg font-medium">{summary.summary.metrics.assistant_turns}</div>
+                </div>
+              </div>
+            </div>
+            {/* <div className="bg-[#D8EFE8] rounded-lg p-4">
               <div className="flex items-center gap-3">
                 {getSentimentIcon(summary.summary.metrics.avg_sentiment)}
                 <div>
@@ -153,11 +162,11 @@ function RouteComponent() {
                   <div className="text-lg font-medium capitalize">{getSentimentTrend(summary.summary.metrics.avg_sentiment)}</div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
-        {/* Sentiment Analysis */}
+        {/* Sentiment Analysis
         <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
           <h2 className="text-xl font-medium text-gray-900 mb-4">Conversation Insights</h2>
           <div className="space-y-4">
@@ -182,7 +191,7 @@ function RouteComponent() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Risk Assessment */}
         <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">

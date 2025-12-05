@@ -29,12 +29,12 @@ export function HomePage() {
           >
             Get Started
           </Link>
-          <Link
+          {/* <Link
             to="/login"
             className="inline-flex items-center justify-center px-8 py-3 border-2 border-[#4A90A0] text-base font-medium rounded-lg text-[#4A90A0] bg-transparent hover:bg-[#4A90A0] hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4A90A0] transition-colors w-full sm:w-auto"
           >
             Sign In
-          </Link>
+          </Link> */}
         </div>
 
         <div className="mt-12 pt-8 border-t border-gray-200">
