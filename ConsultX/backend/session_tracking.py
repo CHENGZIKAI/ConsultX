@@ -90,8 +90,8 @@ class SessionTracker:
         self.buffer_size = buffer_size
         self.sentiment_analyzer = sentiment_analyzer or SentimentAnalyzer()
         self.risk_classifier = risk_classifier or RiskClassifier()
-        self.rag_enabled = enable_rag if enable_rag is not None else _env_flag("CONSULTX_ENABLE_RAG", False)
-        self.rag_auto_reply = rag_auto_reply if rag_auto_reply is not None else _env_flag("CONSULTX_RAG_AUTOREPLY", False)
+        self.rag_enabled = enable_rag if enable_rag is not None else _env_flag("CONSULTX_ENABLE_RAG", True)
+        self.rag_auto_reply = rag_auto_reply if rag_auto_reply is not None else _env_flag("CONSULTX_RAG_AUTOREPLY", True)
         self.rag_country_code = rag_country_code or os.environ.get("CONSULTX_RAG_COUNTRY", "US")
         self.rag_model = rag_model or os.environ.get("CONSULTX_RAG_MODEL", "gemini-2.0-flash")
         if rag_k is not None:

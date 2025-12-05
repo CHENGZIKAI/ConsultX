@@ -182,12 +182,9 @@ class SessionRequestHandler(BaseHTTPRequestHandler):
             "message": result.message.to_dict(),
             "risk": result.risk.to_dict(),
             "buffer": result.buffer.to_dict(),
-            "metrics": result.metrics.to_dict(),
         }
         if result.assistant_message:
             response["assistant_message"] = result.assistant_message.to_dict()
-        if result.rag_result:
-            response["rag"] = result.rag_result
 
         self._send_json(response, status=HTTPStatus.CREATED)
 
