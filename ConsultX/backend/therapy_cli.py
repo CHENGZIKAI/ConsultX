@@ -4,7 +4,7 @@ import os
 
 from dotenv import load_dotenv
 
-from backend.core_adapter import run_therapy_turn
+from core_adapter import run_therapy_turn
 
 
 def main() -> int:

@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 import os
 from dotenv import load_dotenv
 
-from backend.core import orchestrator as orch  # <- our pipeline
+from core import orchestrator as orch  # <- our pipeline
 
 # Load environment variables from .env if present
 load_dotenv()
