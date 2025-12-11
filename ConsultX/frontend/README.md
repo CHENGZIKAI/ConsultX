@@ -27,9 +27,3 @@ A web application for AMS691 Project.
 - `/chat-new`: Improved UI video chat screen
 - `/feedback`: Placeholder for giving user feedback after session
 - `/dashboard`: Central page for user profile, session history, and overall metrics
-
-## To-Do (as of 11/17)
-- [x] Create `login` and `signup`.
-- [ ] Implement `/dashboard` page.
-- [ ] Expand `/chat` interface (controls, layout, connection handling)
-- [ ] Build `/feedback` page after deciding what's being shown there
