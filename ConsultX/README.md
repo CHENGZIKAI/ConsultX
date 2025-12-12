@@ -31,12 +31,16 @@ README.md
 
 ## Getting Started
 1. Ensure Python 3.11+ is available.
-2. (Optional) Set environment overrides:
+2. Install dependencies
+   - python -m pip install -U google-generativeai
+   - python -m pip install -U langchain langchain-community sentence-transformers
+   - python -m pip install -U chromadb
+3. (Optional) Set environment overrides:
    - `CONSULTX_DB_PATH`: SQLite file path (defaults to `consultx.db`).
    - `CONSULTX_BUFFER_SIZE`: Rolling buffer size (defaults to `20` messages).
    - `CONSULTX_API_KEYS`: Comma-separated API keys required for every request.
    - `CONSULTX_API_KEYS_FILE`: File containing one API key per line (merged with inline keys).
-3. Launch the server:
+4. Launch the server:
    ```bash
    python -m backend.api
    ```
